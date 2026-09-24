@@ -12,16 +12,26 @@ import java.util.List;
 
 @Repository
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
+
     List<LeaveRequest> findByEmployeeIdOrderByAppliedAtDesc(Long employeeId);
+
     List<LeaveRequest> findByStatusOrderByAppliedAtAsc(LeaveStatus status);
-    List<LeaveRequest> findByEmployeeIdAndStatus(Long employeeId, LeaveStatus status);
+
+    List<LeaveRequest> findByEmployeeIdAndStatus(
+            Long employeeId,
+            LeaveStatus status
+    );
+
+    long countByStatus(LeaveStatus status);
 
     @Query("SELECT lr FROM LeaveRequest lr WHERE lr.employeeId = :employeeId " +
-           "AND lr.status IN ('PENDING', 'APPROVED') " +
-           "AND ((lr.startDate BETWEEN :startDate AND :endDate) " +
-           "OR (lr.endDate BETWEEN :startDate AND :endDate) " +
-           "OR (:startDate BETWEEN lr.startDate AND lr.endDate))")
-    List<LeaveRequest> findOverlappingRequests(@Param("employeeId") Long employeeId,
-                                              @Param("startDate") LocalDate startDate,
-                                              @Param("endDate") LocalDate endDate);
+            "AND lr.status IN ('PENDING', 'APPROVED') " +
+            "AND ((lr.startDate BETWEEN :startDate AND :endDate) " +
+            "OR (lr.endDate BETWEEN :startDate AND :endDate) " +
+            "OR (:startDate BETWEEN lr.startDate AND lr.endDate))")
+    List<LeaveRequest> findOverlappingRequests(
+            @Param("employeeId") Long employeeId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
