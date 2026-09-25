@@ -4,10 +4,12 @@ import com.revworkforce.notificationservice.entity.enums.NotificationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Positive;
 
 public class NotificationCreateDto {
 
     @NotNull(message = "User ID is required")
+    @Positive(message = "User ID must be positive")
     private Long userId;
 
     @NotNull(message = "Notification type is required")

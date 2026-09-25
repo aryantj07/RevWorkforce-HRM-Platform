@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.revworkforce.notificationservice.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -78,5 +79,59 @@ class NotificationServiceTest {
         List<NotificationResponseDto> list = notificationService.getUserNotifications(100L);
         assertEquals(1, list.size());
         assertEquals(100L, list.get(0).getUserId());
+    }
+
+    @Test
+    void getUnreadUserNotifications_shouldReturnList() {
+        when(notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(100L))
+                .thenReturn(List.of(sampleNotification));
+
+        List<NotificationResponseDto> list =
+                notificationService.getUnreadUserNotifications(100L);
+
+        assertEquals(1, list.size());
+        assertEquals(100L, list.get(0).getUserId());
+        assertFalse(list.get(0).isRead());
+    }
+
+    @Test
+    void markAllAsRead_shouldCallRepository() {
+        notificationService.markAllAsRead(100L);
+
+        verify(notificationRepository).markAllAsReadForUser(100L);
+    }
+
+    @Test
+    void deleteNotification_successful() {
+        when(notificationRepository.existsById(1L)).thenReturn(true);
+
+        notificationService.deleteNotification(1L);
+
+        verify(notificationRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteNotification_notFound() {
+        when(notificationRepository.existsById(999L)).thenReturn(false);
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> notificationService.deleteNotification(999L)
+        );
+
+        verify(notificationRepository, never()).deleteById(999L);
+    }
+
+    @Test
+    void markAsRead_notFound() {
+        when(notificationRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> notificationService.markAsRead(999L)
+        );
+
+        verify(notificationRepository, never()).save(any(Notification.class));
     }
 }
