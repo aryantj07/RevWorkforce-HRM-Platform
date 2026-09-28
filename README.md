@@ -33,3 +33,9 @@ The platform consists of independent microservices supported by:
 ## Team
 
 Developed as a team project using GitHub feature branches, pull requests, code reviews, and controlled merges into the `main` branch.
+
+## Team Contribution
+Yash — Employee Management Service
+Aryan — User Service, Reporting Service, Infrastructure and Integration
+Branson — Leave Service and Notification Service
+Ivan — Performance Service
