@@ -1,7 +1,7 @@
 package com.revworkforce.reporting_service.controller;
 
 import com.revworkforce.reporting_service.dto.DashboardResponse;
-import com.revworkforce.reporting_service.dto.UserResponse;
+import com.revworkforce.reporting_service.dto.EmployeeResponse;
 import com.revworkforce.reporting_service.service.ReportingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +28,11 @@ public class ReportingController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<UserResponse>> getEmployeeReport() {
+    public ResponseEntity<List<EmployeeResponse>> getEmployeeReport() {
 
-        List<UserResponse> users =
+        List<EmployeeResponse> employees =
                 reportingService.getEmployeeReport();
 
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(employees);
     }
 }

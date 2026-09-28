@@ -1,12 +1,12 @@
 package com.revworkforce.reporting_service.service;
 
+import com.revworkforce.reporting_service.client.EmployeeClient;
 import com.revworkforce.reporting_service.client.LeaveClient;
 import com.revworkforce.reporting_service.client.PerformanceClient;
-import com.revworkforce.reporting_service.client.UserClient;
 import com.revworkforce.reporting_service.dto.DashboardResponse;
+import com.revworkforce.reporting_service.dto.EmployeeResponse;
 import com.revworkforce.reporting_service.dto.LeaveSummaryResponse;
 import com.revworkforce.reporting_service.dto.PerformanceSummaryResponse;
-import com.revworkforce.reporting_service.dto.UserResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 class ReportingServiceTest {
 
     @Mock
-    private UserClient userClient;
+    private EmployeeClient employeeClient;
 
     @Mock
     private LeaveClient leaveClient;
@@ -36,15 +36,26 @@ class ReportingServiceTest {
     @Test
     void getDashboard_shouldAggregateData() {
 
-        UserResponse activeUser = new UserResponse();
-        activeUser.setId(1L);
-        activeUser.setUsername("john");
-        activeUser.setActive(true);
+        EmployeeResponse activeEmployee = new EmployeeResponse();
+        activeEmployee.setId(1L);
+        activeEmployee.setFirstName("John");
+        activeEmployee.setLastName("Doe");
+        activeEmployee.setEmail("john@example.com");
+        activeEmployee.setStatus("ACTIVE");
 
-        UserResponse inactiveUser = new UserResponse();
-        inactiveUser.setId(2L);
-        inactiveUser.setUsername("alex");
-        inactiveUser.setActive(false);
+        EmployeeResponse inactiveEmployee = new EmployeeResponse();
+        inactiveEmployee.setId(2L);
+        inactiveEmployee.setFirstName("Alex");
+        inactiveEmployee.setLastName("Smith");
+        inactiveEmployee.setEmail("alex@example.com");
+        inactiveEmployee.setStatus("INACTIVE");
+
+        EmployeeResponse offboardedEmployee = new EmployeeResponse();
+        offboardedEmployee.setId(3L);
+        offboardedEmployee.setFirstName("Mike");
+        offboardedEmployee.setLastName("Brown");
+        offboardedEmployee.setEmail("mike@example.com");
+        offboardedEmployee.setStatus("OFFBOARDED");
 
         LeaveSummaryResponse leaveSummary =
                 new LeaveSummaryResponse();
@@ -63,8 +74,12 @@ class ReportingServiceTest {
         performanceSummary.setPendingReviews(2);
         performanceSummary.setAverageRating(4.2);
 
-        when(userClient.getAllUsers())
-                .thenReturn(List.of(activeUser, inactiveUser));
+        when(employeeClient.getAllEmployees())
+                .thenReturn(List.of(
+                        activeEmployee,
+                        inactiveEmployee,
+                        offboardedEmployee
+                ));
 
         when(leaveClient.getLeaveSummary())
                 .thenReturn(leaveSummary);
@@ -77,7 +92,7 @@ class ReportingServiceTest {
 
         assertNotNull(response);
 
-        assertEquals(2, response.getTotalEmployees());
+        assertEquals(3, response.getTotalEmployees());
         assertEquals(1, response.getActiveEmployees());
         assertEquals(1, response.getInactiveEmployees());
 
@@ -93,28 +108,31 @@ class ReportingServiceTest {
                 response.getPerformanceSummary().getAverageRating()
         );
 
-        verify(userClient).getAllUsers();
+        verify(employeeClient).getAllEmployees();
         verify(leaveClient).getLeaveSummary();
         verify(performanceClient).getPerformanceSummary();
     }
 
     @Test
-    void getEmployeeReport_shouldReturnUsers() {
+    void getEmployeeReport_shouldReturnEmployees() {
 
-        UserResponse user = new UserResponse();
-        user.setId(1L);
-        user.setUsername("john");
-        user.setActive(true);
+        EmployeeResponse employee = new EmployeeResponse();
+        employee.setId(1L);
+        employee.setFirstName("John");
+        employee.setLastName("Doe");
+        employee.setEmail("john@example.com");
+        employee.setStatus("ACTIVE");
 
-        when(userClient.getAllUsers())
-                .thenReturn(List.of(user));
+        when(employeeClient.getAllEmployees())
+                .thenReturn(List.of(employee));
 
-        List<UserResponse> result =
+        List<EmployeeResponse> result =
                 reportingService.getEmployeeReport();
 
         assertEquals(1, result.size());
-        assertEquals("john", result.get(0).getUsername());
+        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("ACTIVE", result.get(0).getStatus());
 
-        verify(userClient).getAllUsers();
+        verify(employeeClient).getAllEmployees();
     }
 }
