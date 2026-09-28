@@ -5,6 +5,7 @@ import com.revworkforce.performance_service.repository.PerformanceReviewReposito
 import org.springframework.stereotype.Service;
 import com.revworkforce.performance_service.exception.ReviewNotReadyException;
 import com.revworkforce.performance_service.exception.ReviewWorkflowException;
+import com.revworkforce.performance_service.dto.PerformanceSummaryResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -129,6 +130,35 @@ public class PerformanceReviewService {
         review.setStatus("COMPLETED");
 
         return Optional.of(performanceReviewRepository.save(review));
+    }
+
+    public PerformanceSummaryResponse getPerformanceSummary() {
+
+        List<PerformanceReview> reviews =
+                performanceReviewRepository.findAll();
+
+        long totalReviews = reviews.size();
+
+        long completedReviews = reviews.stream()
+                .filter(review -> "COMPLETED".equals(review.getStatus()))
+                .count();
+
+        long pendingReviews =
+                totalReviews - completedReviews;
+
+        double averageRating = reviews.stream()
+                .map(PerformanceReview::getRating)
+                .filter(rating -> rating != null)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        return new PerformanceSummaryResponse(
+                totalReviews,
+                completedReviews,
+                pendingReviews,
+                averageRating
+        );
     }
 
 
