@@ -19,6 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.revworkforce.leaveservice.client.EmployeeClient;
+import com.revworkforce.leaveservice.client.NotificationClient;
+import com.revworkforce.leaveservice.dto.response.EmployeeResponse;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -46,6 +49,12 @@ class LeaveRequestServiceTest {
     @Mock
     private LeaveBalanceService leaveBalanceService;
 
+    @Mock
+    private EmployeeClient employeeClient;
+
+    @Mock
+    private NotificationClient notificationClient;
+
     @InjectMocks
     private LeaveRequestServiceImpl leaveRequestService;
 
@@ -67,6 +76,13 @@ class LeaveRequestServiceTest {
         LocalDate end = LocalDate.of(2026, 9, 3);
         LeaveApplyRequestDto requestDto = new LeaveApplyRequestDto(100L, 1L, start, end, "Attending family function");
 
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        employeeResponse.setId(100L);
+        employeeResponse.setUserId(1L);
+
+        when(employeeClient.getEmployeeById(100L))
+                .thenReturn(employeeResponse);
+
         when(holidayService.calculateWorkingDays(start, end)).thenReturn(3);
         when(leaveRequestRepository.findOverlappingRequests(100L, start, end)).thenReturn(Collections.emptyList());
         when(leaveTypeRepository.findById(1L)).thenReturn(Optional.of(leaveType));
@@ -83,6 +99,7 @@ class LeaveRequestServiceTest {
         assertEquals(LeaveStatus.PENDING, result.getStatus());
         assertEquals(3, leaveBalance.getPendingDays());
         verify(leaveBalanceRepository).save(leaveBalance);
+        verify(notificationClient).createNotification(any());
     }
 
     @Test
@@ -111,31 +128,64 @@ class LeaveRequestServiceTest {
         when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(i -> i.getArgument(0));
 
         LeaveActionRequestDto actionDto = new LeaveActionRequestDto(200L, "Approved, enjoy!");
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        employeeResponse.setId(100L);
+        employeeResponse.setUserId(1L);
+
+        when(employeeClient.getEmployeeById(100L))
+                .thenReturn(employeeResponse);
         LeaveResponseDto result = leaveRequestService.approveLeave(1L, actionDto);
 
         assertEquals(LeaveStatus.APPROVED, result.getStatus());
         assertEquals(200L, result.getApproverId());
         assertEquals(0, leaveBalance.getPendingDays());
         assertEquals(3, leaveBalance.getUsedDays());
+        verify(notificationClient).createNotification(any());
     }
 
     @Test
     void rejectLeave_successful() {
-        LeaveRequest request = new LeaveRequest(100L, leaveType, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), 3, "Trip");
+        LeaveRequest request = new LeaveRequest(
+                100L,
+                leaveType,
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 3),
+                3,
+                "Trip"
+        );
+
         request.setId(1L);
         request.setStatus(LeaveStatus.PENDING);
         leaveBalance.setPendingDays(3);
 
-        when(leaveRequestRepository.findById(1L)).thenReturn(Optional.of(request));
-        when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(100L, 1L, 2026)).thenReturn(Optional.of(leaveBalance));
-        when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(i -> i.getArgument(0));
+        when(leaveRequestRepository.findById(1L))
+                .thenReturn(Optional.of(request));
 
-        LeaveActionRequestDto actionDto = new LeaveActionRequestDto(200L, "Critical sprint deadline");
-        LeaveResponseDto result = leaveRequestService.rejectLeave(1L, actionDto);
+        when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
+                100L, 1L, 2026))
+                .thenReturn(Optional.of(leaveBalance));
+
+        when(leaveRequestRepository.save(any(LeaveRequest.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        LeaveActionRequestDto actionDto =
+                new LeaveActionRequestDto(200L, "Critical sprint deadline");
+
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        employeeResponse.setId(100L);
+        employeeResponse.setUserId(1L);
+
+        when(employeeClient.getEmployeeById(100L))
+                .thenReturn(employeeResponse);
+
+        LeaveResponseDto result =
+                leaveRequestService.rejectLeave(1L, actionDto);
 
         assertEquals(LeaveStatus.REJECTED, result.getStatus());
         assertEquals(0, leaveBalance.getPendingDays());
         assertEquals(0, leaveBalance.getUsedDays());
+
+        verify(notificationClient).createNotification(any());
     }
 
     @Test

@@ -52,6 +52,7 @@ public class EmployeeService {
         employee.setAddress(employeeDto.getAddress());
         employee.setDepartmentId(employeeDto.getDepartmentId());
         employee.setDesignationId(employeeDto.getDesignationId());
+        employee.setUserId(employeeDto.getUserId());
 
         Employee savedEmployee = employeeRepository.save(employee);
 
@@ -98,6 +99,7 @@ public class EmployeeService {
         existingEmployee.setAddress(employeeDto.getAddress());
         existingEmployee.setDepartmentId(employeeDto.getDepartmentId());
         existingEmployee.setDesignationId(employeeDto.getDesignationId());
+        existingEmployee.setUserId(employeeDto.getUserId());
 
         Employee updatedEmployee = employeeRepository.save(existingEmployee);
 
@@ -139,6 +141,7 @@ public class EmployeeService {
         dto.setAddress(employee.getAddress());
         dto.setDepartmentId(employee.getDepartmentId());
         dto.setDesignationId(employee.getDesignationId());
+        dto.setUserId(employee.getUserId());
 
         return dto;
     }

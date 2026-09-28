@@ -9,6 +9,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.revworkforce.performance_service.client.EmployeeClient;
+import com.revworkforce.performance_service.client.NotificationClient;
+import com.revworkforce.performance_service.dto.EmployeeResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +27,12 @@ class PerformanceReviewServiceTest {
 
     @InjectMocks
     private PerformanceReviewService performanceReviewService;
+
+    @Mock
+    private EmployeeClient employeeClient;
+
+    @Mock
+    private NotificationClient notificationClient;
 
 
     // ---------------------------------------------------------
@@ -194,7 +203,9 @@ class PerformanceReviewServiceTest {
     void shouldSubmitManagerFeedback() {
 
         PerformanceReview review = new PerformanceReview();
+
         review.setId(1L);
+        review.setEmployeeId(100L);
         review.setStatus("SELF_REVIEW_SUBMITTED");
 
         when(performanceReviewRepository.findById(1L))
@@ -203,6 +214,13 @@ class PerformanceReviewServiceTest {
         when(performanceReviewRepository.save(review))
                 .thenReturn(review);
 
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        employeeResponse.setId(100L);
+        employeeResponse.setUserId(1L);
+
+        when(employeeClient.getEmployeeById(100L))
+                .thenReturn(employeeResponse);
+
         Optional<PerformanceReview> result =
                 performanceReviewService.submitManagerFeedback(
                         1L,
@@ -210,10 +228,12 @@ class PerformanceReviewServiceTest {
                 );
 
         assertTrue(result.isPresent());
+
         assertEquals(
                 "Good progress. Keep improving.",
                 result.get().getManagerFeedback()
         );
+
         assertEquals(
                 "FEEDBACK_SUBMITTED",
                 result.get().getStatus()
@@ -221,6 +241,9 @@ class PerformanceReviewServiceTest {
 
         verify(performanceReviewRepository).findById(1L);
         verify(performanceReviewRepository).save(review);
+
+        verify(employeeClient).getEmployeeById(100L);
+        verify(notificationClient).createNotification(any());
     }
 
 

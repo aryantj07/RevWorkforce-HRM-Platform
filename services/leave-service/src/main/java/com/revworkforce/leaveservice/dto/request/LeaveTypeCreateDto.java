@@ -2,6 +2,7 @@ package com.revworkforce.leaveservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LeaveTypeCreateDto {
 
@@ -16,8 +17,10 @@ public class LeaveTypeCreateDto {
     @Size(max = 255, message = "Description cannot exceed 255 characters")
     private String description;
 
+    @JsonProperty("paid")
     private boolean isPaid = true;
 
+    @JsonProperty("active")
     private boolean isActive = true;
 
     public LeaveTypeCreateDto() {
