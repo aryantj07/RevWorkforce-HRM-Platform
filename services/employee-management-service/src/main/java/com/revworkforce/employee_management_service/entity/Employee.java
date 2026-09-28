@@ -16,6 +16,8 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;
+
     private String firstName;
 
     private String lastName;
@@ -112,5 +114,13 @@ public class Employee {
 
     public void setDesignationId(Long designationId) {
         this.designationId = designationId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

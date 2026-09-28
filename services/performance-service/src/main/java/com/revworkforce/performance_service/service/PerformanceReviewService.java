@@ -6,6 +6,10 @@ import org.springframework.stereotype.Service;
 import com.revworkforce.performance_service.exception.ReviewNotReadyException;
 import com.revworkforce.performance_service.exception.ReviewWorkflowException;
 import com.revworkforce.performance_service.dto.PerformanceSummaryResponse;
+import com.revworkforce.performance_service.client.EmployeeClient;
+import com.revworkforce.performance_service.client.NotificationClient;
+import com.revworkforce.performance_service.dto.EmployeeResponse;
+import com.revworkforce.performance_service.dto.NotificationCreateDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +18,18 @@ import java.util.Optional;
 public class PerformanceReviewService {
 
     private final PerformanceReviewRepository performanceReviewRepository;
+    private final EmployeeClient employeeClient;
+    private final NotificationClient notificationClient;
 
-    public PerformanceReviewService(PerformanceReviewRepository performanceReviewRepository) {
+
+    public PerformanceReviewService(
+            PerformanceReviewRepository performanceReviewRepository,
+            EmployeeClient employeeClient,
+            NotificationClient notificationClient) {
+
         this.performanceReviewRepository = performanceReviewRepository;
+        this.employeeClient = employeeClient;
+        this.notificationClient = notificationClient;
     }
 
     public PerformanceReview createReview(PerformanceReview review) {
@@ -77,7 +90,29 @@ public class PerformanceReviewService {
         review.setManagerFeedback(feedback);
         review.setStatus("FEEDBACK_SUBMITTED");
 
-        return Optional.of(performanceReviewRepository.save(review));
+        PerformanceReview updatedReview =
+                performanceReviewRepository.save(review);
+
+        EmployeeResponse employee =
+                employeeClient.getEmployeeById(updatedReview.getEmployeeId());
+
+        if (employee.getUserId() != null) {
+
+            NotificationCreateDto notification =
+                    new NotificationCreateDto();
+
+            notification.setUserId(employee.getUserId());
+            notification.setType("PERFORMANCE_FEEDBACK");
+            notification.setTitle("Performance Feedback Received");
+            notification.setMessage(
+                    "Your manager has submitted feedback on your performance review: "
+                            + updatedReview.getManagerFeedback()
+            );
+
+            notificationClient.createNotification(notification);
+        }
+
+        return Optional.of(updatedReview);
     }
 
     public Optional<PerformanceReview> submitRating(

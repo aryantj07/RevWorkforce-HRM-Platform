@@ -19,6 +19,10 @@ import com.revworkforce.leaveservice.service.LeaveBalanceService;
 import com.revworkforce.leaveservice.service.LeaveRequestService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.revworkforce.leaveservice.client.EmployeeClient;
+import com.revworkforce.leaveservice.client.NotificationClient;
+import com.revworkforce.leaveservice.dto.request.NotificationCreateDto;
+import com.revworkforce.leaveservice.dto.response.EmployeeResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,17 +37,25 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final HolidayService holidayService;
     private final LeaveBalanceService leaveBalanceService;
+    private final EmployeeClient employeeClient;
+    private final NotificationClient notificationClient;
 
-    public LeaveRequestServiceImpl(LeaveRequestRepository leaveRequestRepository,
-                                  LeaveTypeRepository leaveTypeRepository,
-                                  LeaveBalanceRepository leaveBalanceRepository,
-                                  HolidayService holidayService,
-                                  LeaveBalanceService leaveBalanceService) {
+    public LeaveRequestServiceImpl(
+            LeaveRequestRepository leaveRequestRepository,
+            LeaveTypeRepository leaveTypeRepository,
+            LeaveBalanceRepository leaveBalanceRepository,
+            HolidayService holidayService,
+            LeaveBalanceService leaveBalanceService,
+            EmployeeClient employeeClient,
+            NotificationClient notificationClient) {
+
         this.leaveRequestRepository = leaveRequestRepository;
         this.leaveTypeRepository = leaveTypeRepository;
         this.leaveBalanceRepository = leaveBalanceRepository;
         this.holidayService = holidayService;
         this.leaveBalanceService = leaveBalanceService;
+        this.employeeClient = employeeClient;
+        this.notificationClient = notificationClient;
     }
 
     @Override
@@ -102,6 +114,25 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         );
 
         LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+
+        EmployeeResponse employee = employeeClient.getEmployeeById(saved.getEmployeeId());
+
+        if (employee.getUserId() != null) {
+            NotificationCreateDto notification = new NotificationCreateDto();
+            notification.setUserId(employee.getUserId());
+            notification.setType("LEAVE_SUBMITTED");
+            notification.setTitle("Leave Request Submitted");
+            notification.setMessage(
+                    "Your leave request from "
+                            + saved.getStartDate()
+                            + " to "
+                            + saved.getEndDate()
+                            + " has been submitted successfully."
+            );
+
+            notificationClient.createNotification(notification);
+        }
+
         return mapToDto(saved);
     }
 
@@ -130,6 +161,25 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         leaveRequest.setReviewedAt(LocalDateTime.now());
 
         LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+
+        EmployeeResponse employee = employeeClient.getEmployeeById(updated.getEmployeeId());
+
+        if (employee.getUserId() != null) {
+            NotificationCreateDto notification = new NotificationCreateDto();
+            notification.setUserId(employee.getUserId());
+            notification.setType("LEAVE_APPROVED");
+            notification.setTitle("Leave Request Approved");
+            notification.setMessage(
+                    "Your leave request from "
+                            + updated.getStartDate()
+                            + " to "
+                            + updated.getEndDate()
+                            + " has been approved."
+            );
+
+            notificationClient.createNotification(notification);
+        }
+
         return mapToDto(updated);
     }
 
@@ -157,6 +207,25 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         leaveRequest.setReviewedAt(LocalDateTime.now());
 
         LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+
+        EmployeeResponse employee = employeeClient.getEmployeeById(updated.getEmployeeId());
+
+        if (employee.getUserId() != null) {
+            NotificationCreateDto notification = new NotificationCreateDto();
+            notification.setUserId(employee.getUserId());
+            notification.setType("LEAVE_REJECTED");
+            notification.setTitle("Leave Request Rejected");
+            notification.setMessage(
+                    "Your leave request from "
+                            + updated.getStartDate()
+                            + " to "
+                            + updated.getEndDate()
+                            + " has been rejected."
+            );
+
+            notificationClient.createNotification(notification);
+        }
+
         return mapToDto(updated);
     }
 
