@@ -1,12 +1,12 @@
 package com.revworkforce.reporting_service.service;
 
+import com.revworkforce.reporting_service.client.EmployeeClient;
 import com.revworkforce.reporting_service.client.LeaveClient;
 import com.revworkforce.reporting_service.client.PerformanceClient;
-import com.revworkforce.reporting_service.client.UserClient;
 import com.revworkforce.reporting_service.dto.DashboardResponse;
+import com.revworkforce.reporting_service.dto.EmployeeResponse;
 import com.revworkforce.reporting_service.dto.LeaveSummaryResponse;
 import com.revworkforce.reporting_service.dto.PerformanceSummaryResponse;
-import com.revworkforce.reporting_service.dto.UserResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,23 +14,24 @@ import java.util.List;
 @Service
 public class ReportingService {
 
-    private final UserClient userClient;
+    private final EmployeeClient employeeClient;
     private final LeaveClient leaveClient;
     private final PerformanceClient performanceClient;
 
     public ReportingService(
-            UserClient userClient,
+            EmployeeClient employeeClient,
             LeaveClient leaveClient,
             PerformanceClient performanceClient) {
 
-        this.userClient = userClient;
+        this.employeeClient = employeeClient;
         this.leaveClient = leaveClient;
         this.performanceClient = performanceClient;
     }
 
     public DashboardResponse getDashboard() {
 
-        List<UserResponse> users = userClient.getAllUsers();
+        List<EmployeeResponse> employees =
+                employeeClient.getAllEmployees();
 
         LeaveSummaryResponse leaveSummary =
                 leaveClient.getLeaveSummary();
@@ -38,14 +39,15 @@ public class ReportingService {
         PerformanceSummaryResponse performanceSummary =
                 performanceClient.getPerformanceSummary();
 
-        long totalEmployees = users.size();
+        long totalEmployees = employees.size();
 
-        long activeEmployees = users.stream()
-                .filter(UserResponse::isActive)
+        long activeEmployees = employees.stream()
+                .filter(employee -> "ACTIVE".equals(employee.getStatus()))
                 .count();
 
-        long inactiveEmployees =
-                totalEmployees - activeEmployees;
+        long inactiveEmployees = employees.stream()
+                .filter(employee -> "INACTIVE".equals(employee.getStatus()))
+                .count();
 
         DashboardResponse response = new DashboardResponse();
 
@@ -58,7 +60,7 @@ public class ReportingService {
         return response;
     }
 
-    public List<UserResponse> getEmployeeReport() {
-        return userClient.getAllUsers();
+    public List<EmployeeResponse> getEmployeeReport() {
+        return employeeClient.getAllEmployees();
     }
 }

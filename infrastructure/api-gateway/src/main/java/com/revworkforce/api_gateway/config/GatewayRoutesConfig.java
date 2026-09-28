@@ -18,6 +18,7 @@ import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFuncti
 import static org.springframework.web.servlet.function.RequestPredicates.path;
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
 import static org.springframework.cloud.gateway.server.mvc.filter.RetryFilterFunctions.retry;
+import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.stripPrefix;
 
 @Configuration
 public class GatewayRoutesConfig {
@@ -39,6 +40,17 @@ public class GatewayRoutesConfig {
                         URI.create("forward:/fallback/user-service")
                 ))
                 .filter(lb("user-service"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> employeeManagementServiceRoute() {
+
+        return route("employee-management-service-route")
+                .route(path("/employee-management-service/**"), http())
+                .before(uri("http://employee-management-service"))
+                .before(stripPrefix(1))
+                .filter(lb("employee-management-service"))
                 .build();
     }
 }

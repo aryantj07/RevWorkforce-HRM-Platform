@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/employees")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -16,27 +17,27 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @PostMapping("/employees")
+    @PostMapping
     public EmployeeDto createEmployee(
             @Valid @RequestBody EmployeeDto employeeDto) {
 
         return employeeService.createEmployee(employeeDto);
     }
 
-    @GetMapping("/employees")
+    @GetMapping
     public List<EmployeeDto> getAllEmployees() {
 
         return employeeService.getAllEmployees();
     }
 
-    @GetMapping("/employees/{id}")
+    @GetMapping("/{id}")
     public EmployeeDto getEmployeeById(
             @PathVariable Long id) {
 
         return employeeService.getEmployeeById(id);
     }
 
-    @PutMapping("/employees/{id}")
+    @PutMapping("/{id}")
     public EmployeeDto updateEmployee(
             @PathVariable Long id,
             @Valid @RequestBody EmployeeDto employeeDto) {
@@ -44,7 +45,7 @@ public class EmployeeController {
         return employeeService.updateEmployee(id, employeeDto);
     }
 
-    @DeleteMapping("/employees/{id}")
+    @DeleteMapping("/{id}")
     public void deleteEmployee(
             @PathVariable Long id) {
 

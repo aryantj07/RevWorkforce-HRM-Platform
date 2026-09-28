@@ -1,37 +1,18 @@
-package com.revworkforce.employee_management_service.entity;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+package com.revworkforce.reporting_service.dto;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "employees")
-public class Employee {
+public class EmployeeResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String firstName;
-
     private String lastName;
-
     private String email;
-
     private String phoneNumber;
-
     private String status;
-
     private LocalDate dateOfJoining;
-
     private String address;
-
     private Long departmentId;
-
     private Long designationId;
 
     public Long getId() {

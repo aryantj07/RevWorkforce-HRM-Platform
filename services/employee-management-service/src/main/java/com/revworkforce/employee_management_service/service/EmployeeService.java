@@ -5,6 +5,10 @@ import com.revworkforce.employee_management_service.entity.Employee;
 import com.revworkforce.employee_management_service.exception.EmployeeNotFoundException;
 import com.revworkforce.employee_management_service.repository.EmployeeRepository;
 import org.springframework.stereotype.Service;
+import com.revworkforce.employee_management_service.exception.DepartmentNotFoundException;
+import com.revworkforce.employee_management_service.exception.DesignationNotFoundException;
+import com.revworkforce.employee_management_service.repository.DepartmentRepository;
+import com.revworkforce.employee_management_service.repository.DesignationRepository;
 
 import java.util.List;
 
@@ -12,12 +16,30 @@ import java.util.List;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DesignationRepository designationRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(
+            EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository,
+            DesignationRepository designationRepository) {
+
         this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
+        this.designationRepository = designationRepository;
     }
 
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
+
+        if (!departmentRepository.existsById(employeeDto.getDepartmentId())) {
+            throw new DepartmentNotFoundException();
+        }
+
+        if (!designationRepository.existsById(employeeDto.getDesignationId())) {
+            throw new DesignationNotFoundException();
+        }
+
+        validateEmployeeStatus(employeeDto.getStatus());
 
         Employee employee = new Employee();
 
@@ -28,6 +50,8 @@ public class EmployeeService {
         employee.setStatus(employeeDto.getStatus());
         employee.setDateOfJoining(employeeDto.getDateOfJoining());
         employee.setAddress(employeeDto.getAddress());
+        employee.setDepartmentId(employeeDto.getDepartmentId());
+        employee.setDesignationId(employeeDto.getDesignationId());
 
         Employee savedEmployee = employeeRepository.save(employee);
 
@@ -55,6 +79,16 @@ public class EmployeeService {
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(EmployeeNotFoundException::new);
 
+        if (!departmentRepository.existsById(employeeDto.getDepartmentId())) {
+            throw new DepartmentNotFoundException();
+        }
+
+        if (!designationRepository.existsById(employeeDto.getDesignationId())) {
+            throw new DesignationNotFoundException();
+        }
+
+        validateEmployeeStatus(employeeDto.getStatus());
+
         existingEmployee.setFirstName(employeeDto.getFirstName());
         existingEmployee.setLastName(employeeDto.getLastName());
         existingEmployee.setEmail(employeeDto.getEmail());
@@ -62,6 +96,8 @@ public class EmployeeService {
         existingEmployee.setStatus(employeeDto.getStatus());
         existingEmployee.setDateOfJoining(employeeDto.getDateOfJoining());
         existingEmployee.setAddress(employeeDto.getAddress());
+        existingEmployee.setDepartmentId(employeeDto.getDepartmentId());
+        existingEmployee.setDesignationId(employeeDto.getDesignationId());
 
         Employee updatedEmployee = employeeRepository.save(existingEmployee);
 
@@ -77,6 +113,18 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
+    private void validateEmployeeStatus(String status) {
+
+        if (status == null
+                || (!status.equals("ACTIVE")
+                && !status.equals("INACTIVE")
+                && !status.equals("OFFBOARDED"))) {
+
+            throw new IllegalArgumentException(
+                    "Status must be ACTIVE, INACTIVE, or OFFBOARDED");
+        }
+    }
+
     private EmployeeDto convertToDto(Employee employee) {
 
         EmployeeDto dto = new EmployeeDto();
@@ -89,6 +137,8 @@ public class EmployeeService {
         dto.setStatus(employee.getStatus());
         dto.setDateOfJoining(employee.getDateOfJoining());
         dto.setAddress(employee.getAddress());
+        dto.setDepartmentId(employee.getDepartmentId());
+        dto.setDesignationId(employee.getDesignationId());
 
         return dto;
     }
