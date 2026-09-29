@@ -75,6 +75,14 @@ public class EmployeeService {
         return convertToDto(employee);
     }
 
+    public EmployeeDto getEmployeeByUserId(Long userId) {
+
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
+        return convertToDto(employee);
+    }
+
     public EmployeeDto updateEmployee(Long id, EmployeeDto employeeDto) {
 
         Employee existingEmployee = employeeRepository.findById(id)

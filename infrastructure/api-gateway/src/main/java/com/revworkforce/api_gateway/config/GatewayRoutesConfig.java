@@ -53,4 +53,46 @@ public class GatewayRoutesConfig {
                 .filter(lb("employee-management-service"))
                 .build();
     }
+
+    @Bean
+    public RouterFunction<ServerResponse> leaveServiceRoute() {
+
+        return route("leave-service-route")
+                .route(path("/leave-service/**"), http())
+                .before(uri("http://leave-service"))
+                .before(stripPrefix(1))
+                .filter(lb("leave-service"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> performanceServiceRoute() {
+        return route("performance-service-route")
+                .route(path("/performance-service/**"), http())
+                .before(uri("http://performance-service"))
+                .before(stripPrefix(1))
+                .filter(lb("performance-service"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> notificationServiceRoute() {
+        return route("notification-service-route")
+                .route(path("/notification-service/**"), http())
+                .before(uri("http://notification-service"))
+                .before(stripPrefix(1))
+                .filter(lb("notification-service"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> reportingServiceRoute() {
+
+        return route("reporting-service-route")
+                .route(path("/reporting-service/**"), http())
+                .before(uri("http://reporting-service"))
+                .before(stripPrefix(1))
+                .filter(lb("reporting-service"))
+                .build();
+    }
 }
