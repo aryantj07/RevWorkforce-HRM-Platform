@@ -22,18 +22,13 @@ The platform consists of independent microservices supported by:
 ```mermaid
 flowchart TB
 
-    %% Client Layer
     U["Employees / Managers / Admins"]
     F["Frontend<br/>Spring Boot MVC<br/>:8090"]
-
-    U --> F
-
-    %% Gateway
     G["API Gateway<br/>Spring Cloud Gateway<br/>:8080"]
 
+    U --> F
     F --> G
 
-    %% Six Microservices
     subgraph SERVICES["Business Microservices"]
         US["User Service<br/>:8081"]
         LS["Leave Service<br/>:8082"]
@@ -50,12 +45,10 @@ flowchart TB
     G --> NS
     G --> RS
 
-    %% Service integrations
     LS --> NS
     PS --> NS
     EMS --> NS
 
-    %% Infrastructure
     subgraph INFRA["Infrastructure"]
         CS["Config Server<br/>:8888"]
         ES["Eureka Server<br/>:8761"]
@@ -77,7 +70,6 @@ flowchart TB
     NS -. register .-> ES
     RS -. register .-> ES
 
-    %% Database
     DB[("MySQL<br/>Separate database/schema per service")]
 
     US --> DB
@@ -87,7 +79,6 @@ flowchart TB
     NS --> DB
     RS --> DB
 
-    %% DevOps
     subgraph DEVOPS["DevOps"]
         DOCKER["Docker / Docker Compose"]
         K8S["Kubernetes"]
@@ -96,7 +87,7 @@ flowchart TB
 
     JENKINS --> DOCKER
     DOCKER --> K8S
-    K8S -. deploys .-> SERVICES
+    K8S -. deploys .-> G
 
 ### Architecture Overview
 
