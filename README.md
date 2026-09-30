@@ -23,19 +23,19 @@ The platform consists of independent microservices supported by:
 flowchart TB
 
     U["Employees / Managers / Admins"]
-    F["Frontend<br/>Spring Boot MVC<br/>:8090"]
-    G["API Gateway<br/>Spring Cloud Gateway<br/>:8080"]
+    F["Frontend<br/>Spring Boot MVC<br/>Port 8090"]
+    G["API Gateway<br/>Spring Cloud Gateway<br/>Port 8080"]
 
     U --> F
     F --> G
 
     subgraph SERVICES["Business Microservices"]
-        US["User Service<br/>:8081"]
-        LS["Leave Service<br/>:8082"]
-        PS["Performance Service<br/>:8083"]
-        EMS["Employee Management Service<br/>:8084"]
-        NS["Notification Service<br/>:8085"]
-        RS["Reporting Service<br/>:8086"]
+        US["User Service<br/>Port 8081"]
+        LS["Leave Service<br/>Port 8082"]
+        PS["Performance Service<br/>Port 8083"]
+        EMS["Employee Management Service<br/>Port 8084"]
+        NS["Notification Service<br/>Port 8085"]
+        RS["Reporting Service<br/>Port 8086"]
     end
 
     G --> US
@@ -50,27 +50,27 @@ flowchart TB
     EMS --> NS
 
     subgraph INFRA["Infrastructure"]
-        CS["Config Server<br/>:8888"]
-        ES["Eureka Server<br/>:8761"]
+        CS["Config Server<br/>Port 8888"]
+        ES["Eureka Server<br/>Port 8761"]
     end
 
-    CS -. configuration .-> US
-    CS -. configuration .-> LS
-    CS -. configuration .-> PS
-    CS -. configuration .-> EMS
-    CS -. configuration .-> NS
-    CS -. configuration .-> RS
-    CS -. configuration .-> G
+    CS -.-> US
+    CS -.-> LS
+    CS -.-> PS
+    CS -.-> EMS
+    CS -.-> NS
+    CS -.-> RS
+    CS -.-> G
 
-    ES -. service discovery .-> G
-    US -. register .-> ES
-    LS -. register .-> ES
-    PS -. register .-> ES
-    EMS -. register .-> ES
-    NS -. register .-> ES
-    RS -. register .-> ES
+    US -.-> ES
+    LS -.-> ES
+    PS -.-> ES
+    EMS -.-> ES
+    NS -.-> ES
+    RS -.-> ES
+    G -.-> ES
 
-    DB[("MySQL<br/>Separate database/schema per service")]
+    DB[("MySQL")]
 
     US --> DB
     LS --> DB
@@ -80,14 +80,16 @@ flowchart TB
     RS --> DB
 
     subgraph DEVOPS["DevOps"]
+        JENKINS["Jenkins CI/CD"]
         DOCKER["Docker / Docker Compose"]
         K8S["Kubernetes"]
-        JENKINS["Jenkins CI/CD"]
     end
 
     JENKINS --> DOCKER
     DOCKER --> K8S
-    K8S -. deploys .-> G
+    K8S -.-> G
+
+```
 
 ### Architecture Overview
 
@@ -120,7 +122,8 @@ RevWorkforce follows a cloud-native microservices architecture. The frontend com
 Developed as a team project using GitHub feature branches, pull requests, code reviews, and controlled merges into the `main` branch.
 
 ## Team Contribution
-Yash — Employee Management Service
-Aryan — User Service, Reporting Service, Infrastructure and Integration
-Branson — Leave Service and Notification Service
-Ivan — Performance Service
+
+- Yash — Employee Management Service
+- Aryan — User Service, Reporting Service, Infrastructure and Integration
+- Branson — Leave Service and Notification Service
+- Ivan — Performance Service
