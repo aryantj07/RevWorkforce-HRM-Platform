@@ -7,31 +7,42 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out RevWorkforce repository'
+                checkout scm
             }
         }
 
 
-        stage('Build') {
+        stage('Build Backend Services') {
             steps {
                 echo 'Building Spring Boot services'
 
                 sh '''
+                cd infrastructure/config-server
+                mvn clean package -DskipTests
+
+                cd ../eureka-server
+                mvn clean package -DskipTests
+
+                cd ../api-gateway
+                mvn clean package -DskipTests
+
+                cd ../../services/user-service
                 mvn clean package -DskipTests
                 '''
             }
         }
 
 
-        stage('Docker Images') {
+        stage('Docker Build') {
             steps {
-                echo 'Building Docker images'
+                echo 'Docker image build stage'
             }
         }
 
 
-        stage('Deploy Kubernetes') {
+        stage('Kubernetes Deploy') {
             steps {
-                echo 'Deploying to Kubernetes'
+                echo 'Deploying Kubernetes manifests'
 
                 sh '''
                 kubectl apply -f k8s/
