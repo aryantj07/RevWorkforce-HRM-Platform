@@ -64,22 +64,22 @@
 
                 <div class="card">
                     <h3>Leave Balance</h3>
-                    <div class="value">-</div>
+                    <div class="value">${leaveBalance}</div>
                 </div>
 
                 <div class="card">
                     <h3>Pending Leaves</h3>
-                    <div class="value">-</div>
+                    <div class="value">${pendingLeaves}</div>
                 </div>
 
                 <div class="card">
                     <h3>Performance Reviews</h3>
-                    <div class="value">-</div>
+                    <div class="value">${performanceReviews}</div>
                 </div>
 
                 <div class="card">
                     <h3>Unread Notifications</h3>
-                    <div class="value">-</div>
+                    <div class="value">${unreadNotifications}</div>
                 </div>
 
             </div>

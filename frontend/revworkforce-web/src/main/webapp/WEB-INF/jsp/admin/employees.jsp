@@ -232,6 +232,28 @@
 
                     </div>
 
+                    <div class="form-group">
+
+                        <label for="role">
+                            Role
+                        </label>
+
+                        <select id="role"
+                                name="role"
+                                required>
+
+                            <option value="EMPLOYEE">
+                                EMPLOYEE
+                            </option>
+
+                            <option value="MANAGER">
+                                MANAGER
+                            </option>
+
+                        </select>
+
+                    </div>
+
 
                     <div class="form-group">
 
@@ -241,7 +263,8 @@
 
                         <select id="departmentId"
                                 name="departmentId"
-                                required>
+                                required
+                                onchange="filterDesignations()">
 
                             <option value="">
                                 Select Department
@@ -275,12 +298,75 @@
                                 Select Designation
                             </option>
 
-                            <c:forEach var="designation"
-                                       items="${designations}">
+                            <c:forEach var="designation" items="${designations}">
 
-                                <option value="${designation.id}">
-                                    ${designation.name}
-                                </option>
+                                <c:choose>
+
+                                    <%-- Engineering --%>
+                                    <c:when test="${designation.id == 2 || designation.id == 3 || designation.id == 4}">
+                                        <option value="${designation.id}"
+                                                data-department="2">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Finance --%>
+                                    <c:when test="${designation.id == 5 || designation.id == 6 || designation.id == 7}">
+                                        <option value="${designation.id}"
+                                                data-department="3">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Human Resources --%>
+                                    <c:when test="${designation.id == 8 || designation.id == 9 || designation.id == 10}">
+                                        <option value="${designation.id}"
+                                                data-department="4">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Sales --%>
+                                    <c:when test="${designation.id == 11 || designation.id == 12 || designation.id == 13}">
+                                        <option value="${designation.id}"
+                                                data-department="5">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Marketing --%>
+                                    <c:when test="${designation.id == 14 || designation.id == 15 || designation.id == 16}">
+                                        <option value="${designation.id}"
+                                                data-department="6">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Product Management --%>
+                                    <c:when test="${designation.id == 17 || designation.id == 18 || designation.id == 19}">
+                                        <option value="${designation.id}"
+                                                data-department="7">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Operations --%>
+                                    <c:when test="${designation.id == 20 || designation.id == 21}">
+                                        <option value="${designation.id}"
+                                                data-department="8">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                    <%-- Information Technology --%>
+                                    <c:when test="${designation.id == 22 || designation.id == 23}">
+                                        <option value="${designation.id}"
+                                                data-department="15">
+                                            ${designation.name}
+                                        </option>
+                                    </c:when>
+
+                                </c:choose>
 
                             </c:forEach>
 
@@ -359,6 +445,35 @@ function clearUserDetails() {
     document.getElementById("lastName").value = "";
     document.getElementById("email").value = "";
     document.getElementById("phoneNumber").value = "";
+}
+
+function filterDesignations() {
+
+    const departmentSelect =
+        document.getElementById("departmentId");
+
+    const designationSelect =
+        document.getElementById("designationId");
+
+    const departmentId =
+        departmentSelect.value;
+
+    const options =
+        designationSelect.querySelectorAll(
+            "option[data-department]"
+        );
+
+    designationSelect.value = "";
+
+    options.forEach(function(option) {
+
+        if (option.dataset.department === departmentId) {
+            option.hidden = false;
+        } else {
+            option.hidden = true;
+        }
+
+    });
 }
 
 

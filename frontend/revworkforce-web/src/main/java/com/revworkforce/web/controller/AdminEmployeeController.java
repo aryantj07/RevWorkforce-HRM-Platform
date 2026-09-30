@@ -1,3 +1,4 @@
+
 package com.revworkforce.web.controller;
 
 import com.revworkforce.web.model.Department;
@@ -5,6 +6,7 @@ import com.revworkforce.web.model.Designation;
 import com.revworkforce.web.model.EmployeeRequest;
 import com.revworkforce.web.model.User;
 import com.revworkforce.web.service.GatewayClient;
+import com.revworkforce.web.model.UserRoleRequest;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -79,6 +81,7 @@ public class AdminEmployeeController {
             @RequestParam(required = false) String address,
             @RequestParam Long departmentId,
             @RequestParam Long designationId,
+            @RequestParam String role,
             HttpSession session,
             Model model) {
 
@@ -106,6 +109,18 @@ public class AdminEmployeeController {
                     .body(request)
                     .retrieve()
                     .toBodilessEntity();
+
+            if ("MANAGER".equalsIgnoreCase(role)) {
+                UserRoleRequest roleRequest = new UserRoleRequest();
+                roleRequest.setRole("MANAGER");
+
+                gatewayClient
+                        .authenticatedPatch("/api/users/" + userId + "/role", session)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body(roleRequest)
+                        .retrieve()
+                        .toBodilessEntity();
+            }
 
             return "redirect:/admin/employees?success=Employee created successfully";
 

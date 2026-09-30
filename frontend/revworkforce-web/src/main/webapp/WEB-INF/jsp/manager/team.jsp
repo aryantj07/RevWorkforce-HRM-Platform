@@ -126,9 +126,8 @@
 
                                     <td>${employee.status}</td>
 
-                                    <td>${employee.departmentId}</td>
-
-                                    <td>${employee.designationId}</td>
+                                    <td>${departmentNames[employee.departmentId]}</td>
+                                    <td>${designationNames[employee.designationId]}</td>
 
                                 </tr>
 
