@@ -1,0 +1,218 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: revworkforce-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+
+    ports:
+      - "3309:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+
+    networks:
+      - revworkforce
+
+  config-server:
+    build:
+      context: ../infrastructure/config-server
+    container_name: revworkforce-config-server
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: classpath:/config
+    depends_on:
+      - mysql
+    networks:
+      - revworkforce
+
+  eureka-server:
+    build:
+      context: ../infrastructure/eureka-server
+    container_name: revworkforce-eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      - config-server
+    networks:
+      - revworkforce
+
+  user-service:
+    build:
+      context: ../services/user-service
+    container_name: revworkforce-user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/revworkforce_user
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  leave-service:
+    build:
+      context: ../services/leave-service
+    container_name: revworkforce-leave-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/revworkforce_leave
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  performance-service:
+    build:
+      context: ../services/performance-service
+    container_name: revworkforce-performance-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/revworkforce_performance
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  employee-management-service:
+    build:
+      context: ../services/employee-management-service
+    container_name: revworkforce-employee-management-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/revworkforce_employee
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  notification-service:
+    build:
+      context: ../services/notification-service
+    container_name: revworkforce-notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/revworkforce_notification
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  reporting-service:
+    build:
+      context: ../services/reporting-service
+    container_name: revworkforce-reporting-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_USERNAME: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - revworkforce
+
+  api-gateway:
+    build:
+      context: ../infrastructure/api-gateway
+    container_name: revworkforce-api-gateway
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - config-server
+      - eureka-server
+      - user-service
+      - leave-service
+      - performance-service
+      - employee-management-service
+      - notification-service
+      - reporting-service
+
+    networks:
+      revworkforce:
+        aliases:
+          - api-gateway
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: jenkins
+    ports:
+      - "8087:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - revworkforce
+
+  frontend:
+    build:
+      context: ../frontend/revworkforce-web
+    container_name: revworkforce-frontend
+    ports:
+      - "8090:8090"
+    environment:
+      GATEWAY_BASE_URL: http://api-gateway:8080
+    depends_on:
+      - api-gateway
+    networks:
+      - revworkforce
+
+volumes:
+  mysql_data:
+  jenkins_home:
+    external: true
+
+networks:
+  revworkforce:
+    driver: bridge

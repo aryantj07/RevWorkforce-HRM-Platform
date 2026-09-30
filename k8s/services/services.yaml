@@ -1,0 +1,290 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: docker-user-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/revworkforce_user
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 8081
+      targetPort: 8081
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leave-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leave-service
+  template:
+    metadata:
+      labels:
+        app: leave-service
+    spec:
+      containers:
+        - name: leave-service
+          image: docker-leave-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/revworkforce_leave
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leave-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: leave-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: performance-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: performance-service
+  template:
+    metadata:
+      labels:
+        app: performance-service
+    spec:
+      containers:
+        - name: performance-service
+          image: docker-performance-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/revworkforce_performance
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: performance-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: performance-service
+  ports:
+    - port: 8083
+      targetPort: 8083
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-management-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-management-service
+  template:
+    metadata:
+      labels:
+        app: employee-management-service
+    spec:
+      containers:
+        - name: employee-management-service
+          image: docker-employee-management-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/revworkforce_employee
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-management-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: employee-management-service
+  ports:
+    - port: 8084
+      targetPort: 8084
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: docker-notification-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8085
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/revworkforce_notification
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 8085
+      targetPort: 8085
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting-service
+  namespace: revworkforce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reporting-service
+  template:
+    metadata:
+      labels:
+        app: reporting-service
+    spec:
+      containers:
+        - name: reporting-service
+          image: docker-reporting-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8086
+          env:
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:configserver:http://config-server:8888
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka/
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revworkforce-secrets
+                  key: mysql-root-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting-service
+  namespace: revworkforce
+spec:
+  selector:
+    app: reporting-service
+  ports:
+    - port: 8086
+      targetPort: 8086
