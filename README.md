@@ -17,6 +17,100 @@ The platform consists of independent microservices supported by:
 - Docker & Kubernetes
 - Jenkins CI/CD
 
+## System Architecture
+
+```mermaid
+flowchart TB
+
+    %% Client Layer
+    U["Employees / Managers / Admins"]
+    F["Frontend<br/>Spring Boot MVC<br/>:8090"]
+
+    U --> F
+
+    %% Gateway
+    G["API Gateway<br/>Spring Cloud Gateway<br/>:8080"]
+
+    F --> G
+
+    %% Six Microservices
+    subgraph SERVICES["Business Microservices"]
+        US["User Service<br/>:8081"]
+        LS["Leave Service<br/>:8082"]
+        PS["Performance Service<br/>:8083"]
+        EMS["Employee Management Service<br/>:8084"]
+        NS["Notification Service<br/>:8085"]
+        RS["Reporting Service<br/>:8086"]
+    end
+
+    G --> US
+    G --> LS
+    G --> PS
+    G --> EMS
+    G --> NS
+    G --> RS
+
+    %% Service integrations
+    LS --> NS
+    PS --> NS
+    EMS --> NS
+
+    %% Infrastructure
+    subgraph INFRA["Infrastructure"]
+        CS["Config Server<br/>:8888"]
+        ES["Eureka Server<br/>:8761"]
+    end
+
+    CS -. configuration .-> US
+    CS -. configuration .-> LS
+    CS -. configuration .-> PS
+    CS -. configuration .-> EMS
+    CS -. configuration .-> NS
+    CS -. configuration .-> RS
+    CS -. configuration .-> G
+
+    ES -. service discovery .-> G
+    US -. register .-> ES
+    LS -. register .-> ES
+    PS -. register .-> ES
+    EMS -. register .-> ES
+    NS -. register .-> ES
+    RS -. register .-> ES
+
+    %% Database
+    DB[("MySQL<br/>Separate database/schema per service")]
+
+    US --> DB
+    LS --> DB
+    PS --> DB
+    EMS --> DB
+    NS --> DB
+    RS --> DB
+
+    %% DevOps
+    subgraph DEVOPS["DevOps"]
+        DOCKER["Docker / Docker Compose"]
+        K8S["Kubernetes"]
+        JENKINS["Jenkins CI/CD"]
+    end
+
+    JENKINS --> DOCKER
+    DOCKER --> K8S
+    K8S -. deploys .-> SERVICES
+
+### Architecture Overview
+
+RevWorkforce follows a cloud-native microservices architecture. The frontend communicates with the backend through the API Gateway, which routes requests to six independent business microservices.
+
+- **User Service** – authentication, authorization and user profiles
+- **Leave Service** – leave applications, balances, approvals and holidays
+- **Performance Service** – reviews, goals and manager feedback
+- **Employee Management Service** – employees, departments, designations and announcements
+- **Notification Service** – employee and manager notifications
+- **Reporting Service** – HR dashboards and organizational reports
+
+**Eureka Server** provides service discovery, while **Config Server** centralizes configuration. Each business service maintains its own data boundaries. Docker, Kubernetes and Jenkins provide the containerization, orchestration and CI/CD layers.
+
 ## Microservices
 
 - User Service
