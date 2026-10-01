@@ -42,7 +42,7 @@ pipeline {
             steps {
                 echo '=== Applying Kubernetes manifests and rolling out ==='
                 sh '''
-                kubectl apply -f k8s/services/user-service.yaml -n revworkforce
+                kubectl apply -f k8s/services/services.yaml -n revworkforce
                 kubectl apply -f k8s/gateway/gateway.yaml -n revworkforce
 
                 kubectl rollout restart deployment/user-service -n revworkforce
